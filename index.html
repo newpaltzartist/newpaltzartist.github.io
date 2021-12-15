@@ -395,12 +395,11 @@
             miller_json = await $.getJSON("miller_art.json");
             //filter the json so the jsartvalue is equal to ANY inside the type attribute
             //use ES6 Arrow Functions
-
-            console.log(miller_json);
-            console.log(miller_json);
             var filtered_json = miller_json.filter(item => item["type"].some(i => i == jsartvalue));
-            
-            console.log(filtered_json);
+            if(jsartvalue == "all"){
+                filtered_json = miller_json;
+            }
+
             $("#mainContent").bind('mouseover', function() {
                 hovercontent();
             });
