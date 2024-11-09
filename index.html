@@ -4,7 +4,7 @@
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <title>Howard Miller, local New Paltz artist</title>
-
+    <script src="miller_art.json"></script>
 
     <style type="text/css">
         body {
@@ -211,25 +211,27 @@
             color: #FF0000;
         }
 
+
+
         .picturediv {
-            height: 120px;
-            width: 120px;
+            height: 200px;
+            
+              white-space: nowrap;
+
             float: left;
             background-color: #000B12;
-            vertical-align: middle;
+/*            vertical-align: middle;*/
             cursor: pointer;
+            display: flex;
         }
+
+        
+
 
         .picturediv img {
             cursor: pointer;
-            margin-top: 24px;
         }
 
-        .colorbackground {
-            height: 120px;
-            width: 120px;
-            position: absolute;
-        }
 
         .imageclickable {
             left: 0px;
@@ -243,6 +245,12 @@
             margin: 0;
             background-color: #00FFFF;
         }
+
+        .overlay
+        {
+            display: none;
+        }
+
 
         #footer {
             height: 222px;
@@ -288,7 +296,126 @@
             font-size: 17px
         }
 
-        -->
+        
+
+/*overlay*/
+
+          /* overlay holding two main columns */
+  .overlay {
+    display: flex;
+    width: 80%;
+    height: 80vh;
+    background-color: #000000;
+    padding: 5px;
+    color: #ff001e;
+    display: none;
+      /* New properties for centering and fixing overlay */
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 1000; /* Ensures overlay is on top of other content */
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.5); /* Optional shadow for overlay */
+
+  }
+
+  /* Left column (50% width) */
+  .overlay .left-column {
+    flex: 1;
+    display: flex;
+    padding: 20px;
+    justify-content: center;
+    align-items: center;
+    font-size: 1.5rem;
+  }
+
+  /* Right column (50% width), divided into three rows */
+  .overlay .right-column {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* Three rows inside the right column */
+  .overlay .row {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 1.5rem;
+  }
+
+  .overlay .overlay_image
+  {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+  }
+
+/* Main container for the button */
+.button-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* Rainbow border effect on the button */
+.view-art-button {
+  padding: 10px 20px;
+  font-size: 1.4rem;
+  font-weight: bold;
+  background-color: #000000;
+  color: #ffffff;
+  border: 8px solid;
+  border-radius: 8px;
+  cursor: pointer;
+  outline: none;
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.3s ease;
+  font-family: 'Poppins', sans-serif;
+  letter-spacing: 2px;
+  background-clip: padding-box;
+  
+  /* Rainbow border animation */
+  border-image: conic-gradient(
+    from 0deg,
+    red,
+    orange,
+    yellow,
+    green,
+    cyan,
+    blue,
+    violet,
+    red
+  ) 1;
+  animation: rainbow-text 1s linear infinite;
+}
+
+/* Scale effect on hover */
+.view-art-button:hover {
+  transform: scale(1.35);
+}
+
+/* Animated gradient text */
+.view-art-button span {
+  
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: #FF001e;
+  animation: rainbow-text 10s linear infinite;
+}
+
+@keyframes rainbow-text {
+  0% { filter: hue-rotate(0deg); }
+  100% { filter: hue-rotate(360deg); }
+}
+
+/*overlay*/
+
+
+
+
     </style>
     <!--[if IE]>
 <style type="text/css"> 
@@ -310,12 +437,9 @@
 <![endif]-->
     <script type="text/javascript" src="js/jquery-1.11.1.min.js"></script>
     <script  type="text/javascript" defer>
-        //vertically aligns picture inside each gallery div
-        function verticalalign(para) {
-            var welks = 60 - ($(para).height() / 2);
-            var welks_px = welks + "px";
-            $(para).css('margin-top', welks_px);
-        }
+
+
+        
         //alters the main content box 
         function maincontent(section) {
             $("#mainContentInnerHtml").children().hide();
@@ -325,18 +449,15 @@
             }
             if (section == "galleries") {
                 $("#mainContentGalleries").show();
-                //vertical align upon filter request
-                $(".imageclickable").each(function() {
-                    verticalalign(this);
-                });
-                //gallery background-color alternate background color
-                $(".picturediv:even").css("background-color", "#0A041B");
             }
             if (section == "artiststatement") {
                 $("#mainContentArtistStatement").fadeIn(1000);
             }
             if (section == "contact") {
                 $("#mainContentContact").fadeIn(1000);
+            }
+            if (section == "video_art_show") {
+                $("#mainContentVideoArtShow").fadeIn(1000);
             }
             changeheight(section);
         } //end of main content function
@@ -368,7 +489,7 @@
             var numberinrow = Math.floor($("#mainContent").width() / $(".picturediv").width());
             var numberofrows = (Math.floor(($(".picturediv").size()) / numberinrow) + 1);
             var pixels = numberofrows * ($(".picturediv").height());
-            return pixels;
+            return 7500;
         }
 
         function seamlessheight(a) //makes sure the transition of side pattern meshes well with footer
@@ -387,162 +508,129 @@
             return a;
         }
         //filter the galleries
-        var miller_json = {}
         async function filter(jsartattribute, jsartvalue) {
-            hovercounter = 0;;
+            hovercounter = 0;
 
-            //get json at miller_art.json in plain javascript
-            miller_json = await $.getJSON("miller_art.json");
-            //filter the json so the jsartvalue is equal to ANY inside the type attribute
+
             //use ES6 Arrow Functions
-            var filtered_json = miller_json.filter(item => item["type"].some(i => i == jsartvalue));
+            filtered_json = [];
             if(jsartvalue == "all"){
                 filtered_json = miller_json;
+            
             }
-
-            $("#mainContent").bind('mouseover', function() {
-                hovercontent();
-            });
+            else {
+                filtered_json = miller_json.filter(item => item["type"].some(i => i == jsartvalue));
+            }
 
             filtered_html = '';
             for (var i = 0; i < filtered_json.length; i++) {
                 item = filtered_json[i];
                 id = item["id"];
                 description = item["description"];
-                filtered_html += `<div class="picturediv"><a href="javascript:generate_center_overlay(${id},'${description}')" class="" border=0><div class="colorbackground"></div><div style="text-align: center"><img class="imageclickable" src="art/Miller_Howard_${id}_t.jpg"></div></a></div>`;
+                image_src = item["image_src"];
+
+
+                filtered_html += `<div class="picturediv"><a href="javascript:generate_center_overlay(${id},'${image_src}','${description}')" class="" border=0><div style="text-align: center"><img class="imageclickable" src="art/${image_src}"></div></a></div>`;
+
             }
 
             $("#gallerydiv").html(filtered_html);
 
             maincontent("galleries");
             
-            transitions();
+            //transitions();
             //if img doesn't load, delete the picturediv
             $("#gallerydiv img").bind('error', function() {
                 $(this).parent().parent().parent().remove();
             });
-            setTimeout("$('.imageclickable').each(function () {verticalalign(this);});", 200);
+
+            
+            updateImageDimensions();
+
+            scroll_height = document.querySelector("#gallerydiv").scrollHeight;
+            changeheight(scroll_height);
+          
         }
 
-        function generate_center_overlay(id,description)
-        {
-            overlay = document.createElement("div");
-            overlay.id = "center_overlay";
-            overlay.style.position = "absolute";
-            //width 400, height 400, CENTER of page
-            overlay.style.width = "600px";
-            overlay.style.height = "500px";
-            overlay.style.top = "50%";
-            overlay.style.left = "50%";
-            overlay.style.marginLeft = "-300px";
-            overlay.style.marginTop = "-250px";
-            overlay.style.backgroundColor = "rgba(33,0,0,0.9)";
-            overlay.style.zIndex = "100";
-            overlay.style.display = "block";
+        
 
-            inner = document.createElement("div");
-            //make this a relative div INSIDE the overlay
-            inner.style.position = "relative";
-            inner.style.padding = "10px";
-            // inner.style.width = "100%";
-            // inner.style.backgroundColor = "rgba(33,77,0,0.9)";
-            inner.style.zIndex = "100";
-            inner.style.display = "block";
-            inner.style.color = "#FD373F";
-            inner.style.fontFamily = "Verdana, Arial, Helvetica, sans-serif";
-            inner.style.fontSize = "14px";
+        function generate_center_overlay(id, image_src, description_text)
+        {   
+            overlay = document.querySelector(".overlay");
+            overlay_image = document.querySelector(".overlay_image");
+            description_element = document.querySelector(".description");
+            overlay.style.display = "flex";
+            overlay_image.src = "art/" + image_src;
+            if(description_text == "Description") description_text = "";
+            description_element.innerText = description_text;
 
-            //            IF YOU NEED THE DESCRIPTION
-            //
-            inner.innerHTML = `<div style="text-align: center;"><img src="art/Miller_Howard_${id}_original.jpg"></div><div style="text-align: center;">${description}</div>`;
-
-
-            overlay.appendChild(inner);
-  
-
-
-            body = document.getElementsByTagName("body")[0];
-            document.body.appendChild(overlay);     
         }
 
         //concerns the generate_center_overlay function
         //if you click outside the window, it closes
         window.onload = () => {
-            body_element = document.getElementsByTagName("body")[0];
-            body_element.onclick = function () {
-                if (event.target.id != "center_overlay") {
-                    //remove center_overlay
-                    center_overlay = document.getElementById("center_overlay");
-                    body.removeChild(center_overlay);
+              body_element = document.getElementsByTagName("body")[0];
+              body_element.onclick = function () {
+                if (!event.target.closest(".overlay")) {
+                  // Check if center_overlay exists before removal
+                  document.querySelector(".overlay").style = "none";
                 }
-            }
-        };
+              };
+            };
         
-        
-        
-        function hovercontent() {
-            $(".imageclickable").each(function() {
-                verticalalign(this);
-            });
-            hovercounter++;
-            if (hovercounter == 5) {
-                $("#mainContent").unbind('mouseover');
-            }
-        }
 
-        function transitions() {
-            //gallery gets colorful when hovering 
-            $(".picturediv a").hover(
-                function() {
-                    third = $(".picturediv a").index(this) % 3;
-                    if (third == 0) {
-                        colorurl = "url('images/blueshadow_120.jpg')";
-                    }
-                    if (third == 1) {
-                        colorurl = "url('images/pinkshadow_120.jpg')";
-                    }
-                    if (third == 2) {
-                        colorurl = "url('images/orangeshadow_120.jpg')";
-                    }
-                    var colorbackgrounddiv = $(this).children().children(".colorbackground");
-                    $(this).children(".colorbackground").css("background-image", colorurl);
-                    $(this).children(".colorbackground").fadeIn(800);
-                },
-                function() {
-                    $(this).children(".colorbackground").hide().fadeOut(0);
-                }
-            );
-        }
 
+
+
+    // If the images are already loaded when the script runs, trigger a manual load event:
+    $(".imageclickable").each(function() {
+        if (this.complete) {
+            $(this).trigger("load");
+        }
+    });
+
+
+ 
         function pause() {
             var ytv = document.getElemenyById('you_tube_video');
             ytv.pauseVideo();
         }
+
+
+
+
+
+
+
+
         //start initializer function
         $
             (
                 function() {
+
                     maincontent("galleries");
+                    
                     //maincontent width control
-                    if (document.body.clientWidth < 1000) //small resolution
-                    {
-                        $("#sidebar1").height(2960);
-                        $("#mainContent").height(2958);
-                        $("#mainContent").width(document.body.clientWidth - $("#sidebar1").width() - 25);
-                    } else {
-                        $("#mainContent").width(document.body.clientWidth - $("#sidebar1").width() - 5);
-                    }
-                    //chance of vertically aligning better upon hovering over section
-                    $("#mainContent").hover(function() {
-                        hovercontent();
-                    });
-                    //gallery background-color alternate background color
-                    $(".picturediv:even").css("background-color", "#0A041B");
+                    // if (document.body.clientWidth < 1000) //small resolution
+                    // {
+                    //     $("#sidebar1").height(5000);
+                    //     $("#mainContent").height(5000);
+                    //     $("#mainContent").width(document.body.clientWidth - $("#sidebar1").width() - 25);
+                    // } else {
+                    //     $("#mainContent").width(document.body.clientWidth - $("#sidebar1").width() - 5);
+                    // }
+
+
+
+                    filter('type','all');
+                
+
+
+
                     //does something with the links for the facebox code
                     //call previous function to make squares flash upon over in the galleries section
-                    transitions();
+                    //transitions();
                     //"recent work" comes up by ajax initially
-                    filter('type', 'portraits');
                     //highlights menu bar
                     $("#home").hover(
                         function() {
@@ -576,11 +664,99 @@
                             $(".rollover").fadeOut(1);
                         }
                     );
-                    setTimeout("$('.imageclickable').each(function () {verticalalign(this);});", 300);
-                    setTimeout("$('.imageclickable').each(function () {verticalalign(this);});", 1000);
-                    setTimeout("$('.imageclickable').each(function () {verticalalign(this);});", 3500);
+
+
+                       
+
                 } //ends JQuery initializing function
             ); //ends JQuery initializer
+
+
+
+function updateImageDimensions() {
+    // Get the available width of the #gallerydiv container
+    const gallery_width = document.getElementById("gallerydiv").getBoundingClientRect().width;
+
+    let picture_div_row = [];  // Array to hold the current row of picturedivs
+    let width_so_far = 0;      // Track the total width of images in the current row
+
+    $(".imageclickable").each(function() {
+        const pictureDiv = $(this).closest(".picturediv");
+        const pictureHeight = pictureDiv.height();
+
+        // Set the height of the image to match the pictureDiv height
+        $(this).css("height", pictureHeight + "px");
+
+        const image = $(this);
+        const imageNaturalWidth = image.prop('naturalWidth');
+        const imageNaturalHeight = image.prop('naturalHeight');
+
+        // Calculate the initial width based on the aspect ratio
+        const aspectRatio = imageNaturalWidth / imageNaturalHeight;
+        let calculatedWidth = pictureHeight * aspectRatio;
+        if (isNaN(calculatedWidth)) calculatedWidth = imageNaturalWidth;
+
+        // Add the calculated width to the current row's total width
+        width_so_far += calculatedWidth;
+
+        // Add the current pictureDiv to the current row
+        picture_div_row.push({ pictureDiv, calculatedWidth, image });
+
+        // If the current row exceeds the available width, we need to adjust
+        if (width_so_far >= gallery_width) {
+            // Calculate how much we need to shrink the images in this row
+            const scaleFactor = gallery_width / width_so_far;
+
+            // Adjust each image's width proportionally
+            picture_div_row.forEach(function(item) {
+                const adjustedWidth = item.calculatedWidth * scaleFactor;
+                item.image.css("width", adjustedWidth + "px");
+            });
+
+            // Reset the row and the width tracker for the next row
+            picture_div_row = [];
+            width_so_far = 0;
+        } else {
+            // If the current row doesn't exceed the gallery width, set the width
+            image.css("width", calculatedWidth + "px");
+        }
+    });
+
+    // After the loop, adjust the last row if it's not full
+    if (picture_div_row.length > 0 && width_so_far < gallery_width) {
+        const scaleFactor = gallery_width / width_so_far;
+        picture_div_row.forEach(function(item) {
+            const adjustedWidth = item.calculatedWidth * scaleFactor;
+            item.image.css("width", adjustedWidth + "px");
+        });
+    }
+
+  
+}
+
+
+// OVERLAY
+function viewImageInNewTab() {
+    const image = document.querySelector('.overlay_image');
+    if (image) {
+      window.open(image.src, '_blank');
+    } else {
+      alert('Image not found!');
+    }
+  }
+
+  function close_overlay()
+  {
+    overlay = document.querySelector('.overlay');
+    overlay.style.display = "none";
+  }
+// END OVERLAY
+
+
+setTimeout(function(){
+    filter('type','all');
+},1000);
+
     </script>
 </head>
 
@@ -592,6 +768,45 @@
         var hovercounter = 0;
         var tworows = 0;
     </script>
+
+    <div class="overlay">
+          <!-- Left Column -->
+          <div class="left-column">
+            <img class="overlay_image" src=""/>
+          </div>
+          <!-- Right Column with 3 Rows -->
+          <div class="right-column">
+            <div class="row overlay_button">
+              <div class="button-container">
+                <!-- Rainbow border and animated background effect -->
+                <div class="rainbow-border">
+                  <!-- Button with text inside the rainbow border -->
+                  <button class="view-art-button" onclick="viewImageInNewTab()">
+                    <span>View Art in Full Size</span>
+                  </button>
+                </div>
+              </div>
+              <div class="button-container">
+                <!-- Rainbow border and animated background effect -->
+                <div class="rainbow-border">
+                  <!-- Button with text inside the rainbow border -->
+                  <button class="view-art-button" onclick="close_overlay()">
+                    <span>Close</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+            <div class="row price">
+              
+              
+            </div>
+            <div class="row description">
+              
+            </div>
+          </div>
+        </div> <!-- end overlay -->
+        
+
     <div id="container">
         <div id="header">
             <div id="headerleft"> </div>
@@ -605,7 +820,7 @@
                     <li id="home"><img src="images/menu_resume_rollover.jpg" class="rollover" id="home_rollover" style="display: none;" onclick="maincontent('home');" /></li>
                     <li id="contact"><img src="images/menu_contact_rollover.jpg" class="rollover" id="contact_rollover" style="display: none;" onclick="maincontent('contact');" /></li>
                     <li id="video_bar">
-                        <div id="video_inner_div"><a href="https://www.youtube.com/watch?v=v8crUmBfm_U" target="_blank" id="video_link" rel="facebox">Video Of Art Show</a></div>
+                        <div id="video_inner_div"><a onclick="maincontent('video_art_show');">Video Of Art Show</a></div>
                     </li>
                 </ul>
                 <div id="slide"></div>
@@ -698,10 +913,11 @@
                         </div>
                     </div>
                     <div id="gallerydiv">
-                        <div class="picturediv"><a href="" border=0 rel="facebox">
-                                <div class="colorbackground"></div>
-                                <div style="text-align: center"><img class="imageclickable"></div>
-                            </a></div>
+                        <div class="picturediv">
+                            <a href="" border=0 rel="facebox">
+                                <img class="imageclickable">
+                            </a>
+                        </div>
                     </div>
                 </div>
                 <div id="mainContentArtistStatement">
@@ -712,6 +928,15 @@
                 </div>
                 <div id="mainContentContact">
                     <p>I can be contacted at 845-664-0294 or 845-857-9858</p>
+                </div>
+                <div id="mainContentVideoArtShow">
+                    <div>
+                        <video id="bakery_video" width="720" height="480" controls>
+                          <source src="art/bakery.mp4" type="video/mp4">
+                          Your browser does not support the video tag.
+                        </video>
+                    </div>
+                    <iframe width="560" height="315" src="https://www.youtube.com/embed/v8crUmBfm_U?si=dWS-WQMddr4xfhFE" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
                 </div>
                 <!-- end #mainContentInnerHtml -->
             </div>
