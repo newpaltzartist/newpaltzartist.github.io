@@ -80,7 +80,7 @@
             width: 271px;
             background-image: url("images/sidebar_repeat_3_blocks_740.jpg");
             background-repeat: repeat-y;
-            height: 1480px;
+            height: 2500px;
             margin: 0;
             display: block;
         }
@@ -117,7 +117,7 @@
 
         #mainContent {
             z-index: 3;
-            height: 1478px;
+            height: 2500px;
             display: block;
             margin-left: 271px;
             /*main property that was responsible*/
@@ -214,6 +214,7 @@
 
 
         .picturediv {
+            margin: 15px;
             height: 200px;
             
               white-space: nowrap;
@@ -489,7 +490,7 @@
             var numberinrow = Math.floor($("#mainContent").width() / $(".picturediv").width());
             var numberofrows = (Math.floor(($(".picturediv").size()) / numberinrow) + 1);
             var pixels = numberofrows * ($(".picturediv").height());
-            return 7500;
+            return 10000;
         }
 
         function seamlessheight(a) //makes sure the transition of side pattern meshes well with footer
@@ -681,8 +682,12 @@ function updateImageDimensions() {
     let width_so_far = 0;      // Track the total width of images in the current row
 
     $(".imageclickable").each(function() {
+        
+        // Get the padding of the picturediv via css of .picturediv
+        const margin = parseFloat(getComputedStyle(document.querySelector(".picturediv")).marginLeft) * 2;
+
         const pictureDiv = $(this).closest(".picturediv");
-        const pictureHeight = pictureDiv.height();
+        const pictureHeight = pictureDiv.height() + margin;
 
         // Set the height of the image to match the pictureDiv height
         $(this).css("height", pictureHeight + "px");
@@ -690,9 +695,10 @@ function updateImageDimensions() {
         const image = $(this);
         const imageNaturalWidth = image.prop('naturalWidth');
         const imageNaturalHeight = image.prop('naturalHeight');
+        
 
         // Calculate the initial width based on the aspect ratio
-        const aspectRatio = imageNaturalWidth / imageNaturalHeight;
+        const aspectRatio = (imageNaturalWidth) / (imageNaturalHeight);
         let calculatedWidth = pictureHeight * aspectRatio;
         if (isNaN(calculatedWidth)) calculatedWidth = imageNaturalWidth;
 
@@ -709,8 +715,11 @@ function updateImageDimensions() {
 
             // Adjust each image's width proportionally
             picture_div_row.forEach(function(item) {
-                const adjustedWidth = item.calculatedWidth * scaleFactor;
+                const adjustedWidth = (item.calculatedWidth * scaleFactor) - margin;
+                //add vertical padding
+                item.pictureDiv.css("height", pictureHeight + "px");
                 item.image.css("width", adjustedWidth + "px");
+
             });
 
             // Reset the row and the width tracker for the next row
